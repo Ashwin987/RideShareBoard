@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}}</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Chatroom</h1>
+        <img src="/images/ferris.jpg" alt="Chatroom Image" style="width:100%;height:auto;">
+        
+        <form id="search-form">
+            <input type="text" id="search-input" placeholder="Search messages...">
+            <button type="submit">Search</button>
+        </form>
+
+        <ul id="messages">
+            {{#each messages}}
+            <li data-id="{{this._id}}">
+                <strong>{{this.nickname}}</strong>: {{this.text}}
+                <button class="edit-button">Edit</button>
+                <button class="delete-button">Delete</button>
+            </li>
+            {{/each}}
+        </ul>
+        <form id="send-message-form">
+            <input type="text" id="message-input" placeholder="Type a message...">
+            <button type="submit">Send</button>
+        </form>
+    </div>
+    <script src="/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+body {
+    background-color: #2E0854;
+    color: white;
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    width: 80%;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #3B0B6F;
+    border-radius: 8px;
+}
+
+h1 {
+    text-align: center;
+}
+
+#messages {
+    list-style: none;
+    padding: 0;
+}
+
+#messages li {
+    padding: 8px;
+    margin-bottom: 10px;
+    background-color: #4B0082;
+    border-radius: 4px;
+}
+
+#send-message-form {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+#message-input {
+    flex-grow: 1;
+    padding: 8px;
+    border-radius: 4px;
+    border: none;
+}
+
+#send-message-form button {
+    padding: 8px 16px;
+    background-color: #800080;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    margin-left: 10px;
+}
+
+button.edit-button, button.delete-button {
+    margin-left: 10px;
+    padding: 4px 8px;
+    background-color: #800080;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    cursor: pointer;
+}
