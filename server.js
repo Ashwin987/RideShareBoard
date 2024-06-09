@@ -133,14 +133,26 @@ app.delete('/delete-message/:id', authMiddleware.isAuthenticated, async (req, re
     }
 });
 
+// Search messages route
 app.get('/search-messages', authMiddleware.isAuthenticated, async (req, res) => {
-    const { searchTerm } = req.query;
+    const query = req.query.query;
+
+    // Add additional logging
+    console.log('Received search query:', query);
+    console.log('Type of query:', typeof query);
+
+    if (typeof query !== 'string' || query.trim() === '') {
+        return res.status(400).send('Invalid query');
+    }
+
+    const trimmedQuery = query.trim();
+
     try {
-        const messages = await Message.find({
-            room: 'General',
-            text: { $regex: searchTerm, $options: 'i' }
+        const searchResults = await Message.find({
+            text: { $regex: new RegExp(trimmedQuery, 'i') },
+            room: 'General'
         }).populate('user');
-        res.render('chat', { title: 'Chatroom', messages });
+        res.json(searchResults);
     } catch (err) {
         console.error('Error searching messages:', err);
         res.status(500).send('Error searching messages');

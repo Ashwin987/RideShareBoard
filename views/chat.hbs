@@ -10,12 +10,10 @@
     <div class="container">
         <h1>Chatroom</h1>
         <img src="/images/ferris.jpg" alt="Chatroom Image" style="width:100%;height:auto;">
-        
         <form id="search-form">
             <input type="text" id="search-input" placeholder="Search messages...">
             <button type="submit">Search</button>
         </form>
-
         <ul id="messages">
             {{#each messages}}
             <li data-id="{{this._id}}">
