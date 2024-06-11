@@ -1,3 +1,5 @@
+
+
 document.addEventListener('DOMContentLoaded', () => {
     const messageList = document.querySelector('#messages');
     const messageInput = document.querySelector('#message-input');
@@ -61,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const messageItem = document.createElement('li');
         messageItem.dataset.id = message._id;
         messageItem.innerHTML = `
-            <strong>${message.nickname}</strong>: ${message.text}
+            <strong>${message.nickname}</strong>: ${message.text.replace(/</g, '&lt;').replace(/>/g, '&gt;')}
             <button class="edit-button">Edit</button>
             <button class="delete-button">Delete</button>
         `;
