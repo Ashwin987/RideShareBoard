@@ -43,16 +43,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (query) {
             try {
+                console.log('Making fetch request to /search-messages');
                 const response = await fetch(`/search-messages?query=${encodeURIComponent(query)}`);
+                console.log('Fetch request made');
+
                 if (response.ok) {
                     const searchResults = await response.json();
+                    console.log('Search results:', searchResults);
                     updateMessageList(searchResults);
                 } else {
-                    console.error('Error searching messages:', await response.text());
+                    const errorText = await response.text();
+                    console.error('Error searching messages:', errorText);
                 }
             } catch (err) {
                 console.error('Error searching messages:', err);
             }
+        } else {
+            console.warn('Search query is empty');
         }
     });
 
@@ -61,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const messageItem = document.createElement('li');
         messageItem.dataset.id = message._id;
         messageItem.innerHTML = `
-            <strong>${message.nickname}</strong>: ${message.text}
+            <strong>${message.nickname}</strong>: ${message.text.replace(/</g, '&lt;').replace(/>/g, '&gt;')}
             <button class="edit-button">Edit</button>
             <button class="delete-button">Delete</button>
         `;
@@ -69,6 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateMessageList(messages) {
+        console.log('Updating message list with:', messages);
         messageList.innerHTML = '';
         messages.forEach(addMessageToDOM);
     }
@@ -91,7 +99,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (response.ok) {
                         messageItem.querySelector('strong').nextSibling.textContent = `: ${newText}`;
                     } else {
-                        console.error('Error editing message:', await response.text());
+                        const errorText = await response.text();
+                        console.error('Error editing message:', errorText);
                     }
                 } catch (err) {
                     console.error('Error editing message:', err);
@@ -111,7 +120,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (response.ok) {
                     messageItem.remove();
                 } else {
-                    console.error('Error deleting message:', await response.text());
+                    const errorText = await response.text();
+                    console.error('Error deleting message:', errorText);
                 }
             } catch (err) {
                 console.error('Error deleting message:', err);

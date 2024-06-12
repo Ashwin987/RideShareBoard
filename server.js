@@ -3,9 +3,12 @@ const session = require('express-session');
 const mongoose = require('mongoose');
 const MongoStore = require('connect-mongo');
 const bcrypt = require('bcrypt');
+const passport = require('passport');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const User = require('./models/User');
 const Message = require('./models/Message');
 const authMiddleware = require('./middleware/auth');
+const hbs = require('hbs');
 
 const app = express();
 const PORT = 8080;
@@ -20,10 +23,93 @@ app.use(session({
     store: MongoStore.create({ mongoUrl: 'mongodb://localhost:27017/chatApp' })
 }));
 
+app.use(passport.initialize());
+app.use(passport.session());
+
+passport.use(new GoogleStrategy({
+    clientID: '223743386237-j4l2c21iabcmc08rgvr5puu5s4d3kneq.apps.googleusercontent.com',
+    clientSecret: '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',
+    callbackURL: 'http://localhost:8080/auth/google/callback'
+},
+async (token, tokenSecret, profile, done) => {
+    try {
+        let user = await User.findOne({ googleId: profile.id });
+        if (!user) {
+            user = new User({
+                googleId: profile.id,
+                username: profile.displayName
+            });
+            await user.save();
+        }
+        return done(null, user);
+    } catch (err) {
+        return done(err);
+    }
+}));
+
+passport.serializeUser((user, done) => {
+    done(null, user.id);
+});
+
+passport.deserializeUser(async (id, done) => {
+    try {
+        const user = await User.findById(id);
+        done(null, user);
+    } catch (err) {
+        done(err);
+    }
+});
+
+// Set the view engine to hbs
 app.set('view engine', 'hbs');
 app.use(express.static('public'));
 
 // Routes
+app.get('/auth/google',
+    passport.authenticate('google', { scope: ['profile'] })
+);
+
+app.get('/auth/google/callback',
+    passport.authenticate('google', { failureRedirect: '/login' }),
+    (req, res) => {
+        if (!req.user.username) {
+            return res.redirect('/set-username');
+        }
+        req.session.userId = req.user._id;
+        req.session.username = req.user.username;
+        res.redirect('/chatroom');
+    }
+);
+
+app.get('/set-username', (req, res) => {
+    res.render('set-username', { title: 'Set Username' });
+});
+
+app.post('/set-username', async (req, res) => {
+    if (req.isAuthenticated()) {
+        try {
+            const username = req.body.username.trim();
+            const existingUser = await User.findOne({ username });
+
+            if (existingUser) {
+                return res.status(400).send('Username already taken');
+            }
+
+            const user = await User.findById(req.user._id);
+            user.username = username;
+            await user.save();
+
+            req.session.username = username; // Save username in session
+            res.redirect('/chatroom');
+        } catch (err) {
+            console.error('Error setting username:', err);
+            res.status(500).send('Error setting username');
+        }
+    } else {
+        res.redirect('/login');
+    }
+});
+
 app.get('/login', (req, res) => {
     res.render('login', { title: 'Login' });
 });
@@ -94,6 +180,7 @@ app.get('/chatroom', authMiddleware.isAuthenticated, async (req, res) => {
 
 app.post('/send-message', authMiddleware.isAuthenticated, async (req, res) => {
     try {
+        console.log('req.session:', req.session); // Debug statement
         const message = new Message({
             text: req.body.message,
             nickname: req.session.username, // Use username from session
@@ -133,32 +220,6 @@ app.delete('/delete-message/:id', authMiddleware.isAuthenticated, async (req, re
     }
 });
 
-// Search messages route
-app.get('/search-messages', authMiddleware.isAuthenticated, async (req, res) => {
-    const query = req.query.query;
-
-    // Add additional logging
-    console.log('Received search query:', query);
-    console.log('Type of query:', typeof query);
-
-    if (typeof query !== 'string' || query.trim() === '') {
-        return res.status(400).send('Invalid query');
-    }
-
-    const trimmedQuery = query.trim();
-
-    try {
-        const searchResults = await Message.find({
-            text: { $regex: new RegExp(trimmedQuery, 'i') },
-            room: 'General'
-        }).populate('user');
-        res.json(searchResults);
-    } catch (err) {
-        console.error('Error searching messages:', err);
-        res.status(500).send('Error searching messages');
-    }
-});
-
 app.get('/', (req, res) => {
     res.redirect('/login');
 });
@@ -174,4 +235,19 @@ mongoose.connect('mongodb://localhost:27017/chatApp', {
     console.log('MongoDB connected');
 }).catch((err) => {
     console.error('MongoDB connection error:', err);
+});
+
+app.get('/search-messages', async (req, res) => {
+    const { query } = req.query;
+    console.log('Search query received:', query);
+    try {
+        const messages = await Message.find({
+            text: { $regex: new RegExp(query, 'i') }
+        });
+        console.log('Search results:', messages);
+        res.json(messages);
+    } catch (err) {
+        console.error('Error searching messages:', err);
+        res.status(500).send('Error searching messages');
+    }
 });

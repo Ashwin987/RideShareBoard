@@ -1,9 +1,25 @@
 const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
 
-const userSchema = new Schema({
-    username: { type: String, required: true, unique: true },
-    password: { type: String, required: true }
+const userSchema = new mongoose.Schema({
+    googleId: {
+        type: String,
+        unique: true,
+        sparse: true
+    },
+    username: {
+        type: String,
+        required: function() {
+            return !this.googleId; // Username is required if googleId is not present
+        }
+    },
+    password: {
+        type: String,
+        required: function() {
+            return !this.googleId; // Password is required if googleId is not present
+        }
+    }
 });
 
-module.exports = mongoose.model('User', userSchema);
+const User = mongoose.model('User', userSchema);
+
+module.exports = User;
