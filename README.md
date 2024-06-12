@@ -1,6 +1,6 @@
-RideShareBoard
+Chatroom Application
 
-Welcome to RideShareBoard, a real-time chat application designed for users to communicate and share rides efficiently. This project leverages Node.js, Express, MongoDB, and Google OAuth for authentication to create a seamless and secure user experience. Follow the instructions below to set up, run, and use the application.
+Welcome to the Chatroom Application, a real-time messaging platform designed to facilitate easy communication among users. This project utilizes Node.js, Express, MongoDB, and Google OAuth for authentication to ensure a smooth and secure user experience. Follow the instructions below to set up, run, and use the application.
 Getting Started
 Prerequisites
 
