@@ -1,3 +1,5 @@
+
+
 document.addEventListener('DOMContentLoaded', () => {
     const messageList = document.querySelector('#messages');
     const messageInput = document.querySelector('#message-input');
